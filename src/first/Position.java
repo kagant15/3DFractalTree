@@ -13,7 +13,7 @@ public Position() {
 	BranchGroup group = new BranchGroup();
  
    // X axis made of spheres
-   for (float x = -1.0f; x <= 1.0f; x = x + 0.1f)
+   for (float x = -1.0f; x <= 0.5f; x = x + 0.1f)
    {
       Sphere sphere = new Sphere(0.05f);
       TransformGroup tg = new TransformGroup();
