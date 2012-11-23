@@ -24,7 +24,7 @@ public class Tree3D extends Applet{
 	
 //		BranchGroup scene = createSceneGraph();
 		
-		makeTree(3, 5, 0, 0.6);
+		makeTree(2, 3, 0, 0.6, 0.05f);
 		BranchGroup scene = branches;
 		
 		
@@ -36,56 +36,60 @@ public class Tree3D extends Applet{
 	
 	}
 	
-	public void makeTree(int B, int level, double x1, double y1){
+	public void makeTree(int B, int level, double x1, double y1, float radius2){
 		if(level==0){
     		return;
     	}
     		
     	double theta=Math.PI/B;
-    	float length=0.50f;
-    	float radius=0.05f;
+    	float length=0.5f;
+    	float radius=radius2;
 		
     	for(int i=0; i<=B-1; i++){
     		double beta=theta*i;
-    		
-    		
-    		double X2= ((x1+length*Math.cos(Math.random()*theta+beta))+x1)/2;
-       	 	double Y2= ((y1-length*Math.sin(Math.random()*theta+beta))+y1)/2;
+
+    		double x2=x1+length*Math.cos(Math.random()*theta+beta);
+    		double y2=y1-length*Math.sin(Math.random()*theta+beta);
+    		double X2= (x2+x1)/2;
+       	 	double Y2= (y2+y1)/2;
+       	 
+       	 	double angle= Math.PI/2-(Math.atan((y2-y1)/(x2-x1)));
        	 	
-       	 	//gets the mid point of the branch to place the cylinder there
-       	 	float height=(float) Math.sqrt((Math.pow((x1-X2), 2))+(Math.pow((y1-Y2),2)));
+       	 	Transform3D rotateZClkwise = new Transform3D();
+       	 				rotateZClkwise.rotZ(angle); 		//rotate clockwise
+       	 	
+       	 	//calculates the length of the cylinder using the midpoint formula
+       	 	float height=(float) Math.sqrt((Math.pow((x1-x2), 2))+(Math.pow((y1-y2),2)));
        	 	
        	 	//makes the cylinder
-    		Cylinder branch= new Cylinder(radius, height*2);
+    		Cylinder branch= new Cylinder(radius, height);
     		
     		//creates the next location for the cylinder
-    		Vector3f vector = new Vector3f((float)X2, (float)Y2, 0);
+    		Vector3f vector = new Vector3f((float)X2, (float)(-1*Y2), 0);
     		Transform3D move = new Transform3D();
     					move.setTranslation(vector);
-    				
-    		//creates the rotate			
-//    		Transform3D rotateZClkwise = new Transform3D();
-//    					rotateZClkwise.rotZ(Math.PI); 		//rotate clockwise    
-//    		//combines the move with the rotation			
-//    		move.mul(rotateZClkwise);			
+    					move.mul(rotateZClkwise);
     					
     		//Combines the move and the branch	  
     		TransformGroup firstBranchGrp = new TransformGroup();
     		    		   firstBranchGrp.setTransform(move);
-//    		    		   firstBranchGrp.addChild(branch);
+    		    		   firstBranchGrp.addChild(branch);
+    		    		   
     		
     		//Draws the 2D lines			
     		LineArray myLine= new LineArray (2, LineArray.COORDINATES);
     				  myLine.setCoordinate(0, new Point3f((float) (x1), (float)(-1*y1), 0.0f));
-    				  myLine.setCoordinate(1, new Point3f((float) X2, (float) (-1*Y2), 0.0f));		  
+    				  myLine.setCoordinate(1, new Point3f((float) x2, (float) (-1*y2), 0.0f));		  
     		  		
     		// add the cylinder
     		branches.addChild(firstBranchGrp);
     		// add the line
-    		branches.addChild(new Shape3D(myLine));
+//    		branches.addChild(new Shape3D(myLine));
     		
-    		makeTree(B, level-1, X2, Y2);
+    		
+    		makeTree(B, level-1, x2, y2, radius-.01f);
     	}
+    	
 		
 	}
 	
@@ -153,7 +157,7 @@ public class Tree3D extends Applet{
 	 */
 	public DirectionalLight createLight(){
 		// Create a red light that shines for 100m from the origin
-		Color3f light1Color = new Color3f(1.8f, 0.1f, 0.1f);//light color
+		Color3f light1Color = new Color3f(0.8f, 1.1f, 0.3f);//light color
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
 		Vector3f light1Direction = new Vector3f(4.0f, -7.0f, -12.0f);//specifies where the light is coming from
 		DirectionalLight light1 = new DirectionalLight(light1Color, light1Direction);//creates the light
