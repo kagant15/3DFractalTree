@@ -1,7 +1,6 @@
 package first;
 
 import java.applet.Applet;
-
 import com.sun.j3d.utils.universe.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
@@ -11,6 +10,8 @@ import com.sun.j3d.utils.geometry.Cylinder;
 public class Tree3D extends Applet{
 
 	BranchGroup branches;
+	TransformGroup branchTranGroup;
+	SimpleUniverse universe;
 	
 	public static void main(String[] args) {
 		new Tree3D(); 
@@ -18,81 +19,79 @@ public class Tree3D extends Applet{
 
 	public Tree3D() {
 		
+		universe = new SimpleUniverse();
 		branches = new BranchGroup();
-		// Create the universe
-		SimpleUniverse universe = new SimpleUniverse();
-	
-//		BranchGroup scene = createSceneGraph();
+		branchTranGroup = new TransformGroup();
+		branchTranGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		
-		makeTree(2, 3, 0, 0.6, 0.05f);
-		BranchGroup scene = branches;
+		//fractal recursive algorithm call
+		makeTree(3, 3, 0, 0.6, 0.05f);
+
+		//rotation
+//		spinGroup.addChild(createRotation(spinGroup));
 		
+		branches.addChild(branchTranGroup);
 		
-		// adds the light to the group
-		scene.addChild(createLight());
+		// adds light to the world
+		branches.addChild(createLight());
+		
 		// look towards the tree
 		universe.getViewingPlatform().setNominalViewingTransform();
-		universe.addBranchGraph(scene);
+		universe.addBranchGraph(branches);
 	
 	}
 	
-	public void makeTree(int B, int level, double x1, double y1, float radius2){
+	private void makeTree(int B, int level, double x1, double y1, float radius){
 		if(level==0){
     		return;
     	}
     		
     	double theta=Math.PI/B;
-    	float length=0.5f;
-    	float radius=radius2;
+    	float length=level*radius*6;
 		
-    	for(int i=0; i<=B-1; i++){
-    		double beta=theta*i;
-
-    		double x2=x1+length*Math.cos(Math.random()*theta+beta);
-    		double y2=y1-length*Math.sin(Math.random()*theta+beta);
-    		double X2= (x2+x1)/2;
-       	 	double Y2= (y2+y1)/2;
-       	 
-       	 	double angle= Math.PI/2-(Math.atan((y2-y1)/(x2-x1)));
+    	for(int branchNum=0; branchNum<=B-1; branchNum++){
+    		
+    		double beta = theta*branchNum;
+    		double   x2 = x1+length*Math.cos(Math.random()*theta+beta);
+    		double   y2 = y1-length*Math.sin(Math.random()*theta+beta);
+    		double midX = (x2+x1)/2;
+       	 	double midY = (y2+y1)/2;
        	 	
-       	 	Transform3D rotateZClkwise = new Transform3D();
-       	 				rotateZClkwise.rotZ(angle); 		//rotate clockwise
-       	 	
-       	 	//calculates the length of the cylinder using the midpoint formula
-       	 	float height=(float) Math.sqrt((Math.pow((x1-x2), 2))+(Math.pow((y1-y2),2)));
+       	 	//calculates the length of the cylinder using the distance formula
+       	 	float height = (float) Math.sqrt( Math.pow( (x1-x2), 2 ) + Math.pow( (y1-y2), 2 ) );
        	 	
        	 	//makes the cylinder
     		Cylinder branch= new Cylinder(radius, height);
-    		
-    		//creates the next location for the cylinder
-    		Vector3f vector = new Vector3f((float)X2, (float)(-1*Y2), 0);
+       	 
+       	 	//rotate --- calculates the angle of rotation
+       	 	double angle = Math.PI/2 - Math.atan( (y2-y1) / (x2-x1) );
+       	 	Transform3D rotation = new Transform3D();
+       	 				rotation.rotZ(angle); 		
+       	 	
+    		//move --- calculates the location of the cylinder origin //must multiply by -1 because 3D coordinate system is y is positive going down 
+    		Vector3f vector = new Vector3f((float) midX, (float) (-1*midY), 0);
     		Transform3D move = new Transform3D();
     					move.setTranslation(vector);
-    					move.mul(rotateZClkwise);
+    		
+    		//combines the move with the rotate			
+    		move.mul(rotation);
     					
-    		//Combines the move and the branch	  
-    		TransformGroup firstBranchGrp = new TransformGroup();
-    		    		   firstBranchGrp.setTransform(move);
-    		    		   firstBranchGrp.addChild(branch);
-    		    		   
-    		
-    		//Draws the 2D lines			
-    		LineArray myLine= new LineArray (2, LineArray.COORDINATES);
-    				  myLine.setCoordinate(0, new Point3f((float) (x1), (float)(-1*y1), 0.0f));
-    				  myLine.setCoordinate(1, new Point3f((float) x2, (float) (-1*y2), 0.0f));		  
-    		  		
-    		// add the cylinder
-    		branches.addChild(firstBranchGrp);
-    		// add the line
-//    		branches.addChild(new Shape3D(myLine));
-    		
-    		
-    		makeTree(B, level-1, x2, y2, radius-.01f);
+    		//Adds the new position and the branch to the same group
+    		TransformGroup branchGrp = new TransformGroup();
+    		    		   branchGrp.setTransform(move);
+    		    		   branchGrp.addChild(branch);
+    		    	
+    		branchTranGroup.addChild(branchGrp);    		   
+	
+    		makeTree(B, level-1, x2, y2, radius-.018f);
     	}
     	
 		
 	}
-	
+	/**
+	 * ----THIS IS AN EXAMPLE METHOD TO CREATE A ROTATING TREE. DELETE WHEN COMPLETE---- 
+	 * @return
+	 */
 	public BranchGroup createSceneGraph(){
 		//The cylinders we've created with float radius and float height
 		Cylinder cylinderBase = new Cylinder(0.4f, 1.5f);
@@ -125,26 +124,28 @@ public class Tree3D extends Applet{
 		
 		secondBranchGrp.setTransform(moveLeft);
 		secondBranchGrp.addChild(cylinderBranch2);
-		
-		spinGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+	
 		spinGroup.addChild(cylinderBase);
 		spinGroup.addChild(firstBranchGrp);
 		spinGroup.addChild(secondBranchGrp);
 		
 		rotateGroup.addChild(spinGroup);
 		
+		//Continuous rotation of Tree
+		spinGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		spinGroup.addChild(createRotation(spinGroup));	
+		
 		//more or less the world that contains all the objects we will be creating
 		BranchGroup objRoot = new BranchGroup();
 		objRoot.addChild(rotateGroup);
 		
-		//Continuous rotation of Tree
-		spinGroup.addChild(createRotation(spinGroup));	
+
 	
 		return objRoot;
 	}
 	
 	public RotationInterpolator createRotation(TransformGroup spinGroup){
-		Alpha rotationAlpha = new Alpha(-1, 5000);
+		Alpha rotationAlpha = new Alpha(-1, 10000);
 		RotationInterpolator rotator = new RotationInterpolator(rotationAlpha, spinGroup);
 		BoundingSphere bounds = new BoundingSphere();
 		rotator.setSchedulingBounds(bounds);
