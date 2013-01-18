@@ -22,13 +22,14 @@ public class Tree3D extends Applet{
 		universe = new SimpleUniverse();
 		branches = new BranchGroup();
 		branchTranGroup = new TransformGroup();
+		branchTranGroup.addChild(createBase());
 		branchTranGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		
-		//fractal recursive algorithm call
-		makeTree(3, 3, 0, 0.6, 0.05f);
+		//fractal recursive algorithm
+		makeTree(4, 4, 0, 0.6, 0.05f);
 
 		//rotation
-//		spinGroup.addChild(createRotation(spinGroup));
+		branchTranGroup.addChild(createRotation(branchTranGroup));
 		
 		branches.addChild(branchTranGroup);
 		
@@ -47,7 +48,8 @@ public class Tree3D extends Applet{
     	}
     		
     	double theta=Math.PI/B;
-    	float length=level*radius*6;
+    	float length=level*radius*5;
+//    	double alpha=Math.PI*2/B;
 		
     	for(int branchNum=0; branchNum<=B-1; branchNum++){
     		
@@ -59,6 +61,17 @@ public class Tree3D extends Applet{
        	 	
        	 	//calculates the length of the cylinder using the distance formula
        	 	float height = (float) Math.sqrt( Math.pow( (x1-x2), 2 ) + Math.pow( (y1-y2), 2 ) );
+       	 	
+       	 	//THE FOLLOWING CODE IS FOR THE Y ROTATION
+       	 	
+       	 	//the new point of the base of the branch using point, distance, angle
+//       	 	double TommyX = x1+((x2-x1)*Math.cos(alpha));
+//       	 	double TommyY = y2+((x2-x1)*Math.sin(alpha));
+//       	 	
+//       	 	//rotate Y
+//       	 	Transform3D rotateY = new Transform3D();
+//       	 				rotateY.rotX(alpha);
+       	 	
        	 	
        	 	//makes the cylinder
     		Cylinder branch= new Cylinder(radius, height);
@@ -75,6 +88,8 @@ public class Tree3D extends Applet{
     		
     		//combines the move with the rotate			
     		move.mul(rotation);
+    		//add the y rotation
+//    		move.mul(rotateY);
     					
     		//Adds the new position and the branch to the same group
     		TransformGroup branchGrp = new TransformGroup();
@@ -88,6 +103,33 @@ public class Tree3D extends Applet{
     	
 		
 	}
+	
+	private TransformGroup createBase(){
+		Cylinder cylinderBase = new Cylinder(0.05f, .80f);
+		
+		Transform3D rotateY = new Transform3D();
+					rotateY.rotY(Math.PI/6);
+					
+		Transform3D rotateZ = new Transform3D();
+					rotateZ.rotZ(Math.PI/4);
+					
+		Transform3D rotateX = new Transform3D();
+					rotateX.rotX(Math.PI/4);
+		//move
+		Transform3D move= new Transform3D();
+					move.setTranslation(new Vector3f( 0.0f, -0.95f, 0.0f));
+//					move.mul(rotateX);
+//					move.mul(rotateY);
+//					move.mul(rotateZ);
+		
+		TransformGroup grp = new TransformGroup();
+					   grp.setTransform(move);
+					   grp.addChild(cylinderBase);  
+		
+		return grp;
+		
+	}
+	
 	/**
 	 * ----THIS IS AN EXAMPLE METHOD TO CREATE A ROTATING TREE. DELETE WHEN COMPLETE---- 
 	 * @return
@@ -166,6 +208,5 @@ public class Tree3D extends Applet{
 		
 		return light1;
 	}
-
 
 }//end of Tree3D class
