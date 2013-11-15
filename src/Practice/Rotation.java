@@ -1,4 +1,4 @@
-package test;
+package Practice;
 
 import java.applet.Applet;
 import java.awt.BorderLayout;

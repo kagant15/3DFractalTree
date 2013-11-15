@@ -1,4 +1,4 @@
-package test;
+package Practice;
 
 import java.awt.Frame;
 import java.applet.Applet;

@@ -1,4 +1,4 @@
-package first;
+package JavaPracticeExamples;
 
 import com.sun.j3d.utils.picking.*;
 

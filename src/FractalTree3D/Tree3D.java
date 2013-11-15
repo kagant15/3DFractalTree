@@ -1,4 +1,4 @@
-package first;
+package FractalTree3D;
 
 import java.applet.Applet;
 import com.sun.j3d.utils.universe.*;

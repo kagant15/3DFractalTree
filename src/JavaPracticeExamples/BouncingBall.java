@@ -1,4 +1,4 @@
-package first;
+package JavaPracticeExamples;
 
 import java.applet.Applet;
 import java.awt.*;
